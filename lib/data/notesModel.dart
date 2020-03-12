@@ -1,3 +1,5 @@
+import 'notesDataBase.dart';
+
 class NotesModel {
   int id;
   String content;
@@ -22,5 +24,11 @@ class NotesModel {
       'isFav': this.isFav == true ? 1 : 0,
       'date': this.date.toIso8601String()
     };
+  }
+  NotesDataBaseService db = new NotesDataBaseService();
+  NotesModel.deleteModel(NotesModel model,Function deleteChanges) {
+    db.deleteNoteInDB(NotesModel(id: model.id)).then((_) {
+      deleteChanges();
+    });
   }
 }

@@ -1,6 +1,6 @@
 import 'package:daily_manager/data/notesDataBase.dart';
 import 'package:daily_manager/data/notesModel.dart';
-import 'package:daily_manager/ui/screens/newNote.dart';
+import 'package:daily_manager/ui/widgets/noteListRow.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 
@@ -11,7 +11,6 @@ class NotesScreen extends StatefulWidget {
 
 class _NotesScreenState extends State<NotesScreen> {
   List<NotesModel> notesList = new List();
-  bool isList = true;
   NotesDataBaseService db = new NotesDataBaseService();
 
   @override
@@ -40,17 +39,8 @@ class _NotesScreenState extends State<NotesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(child: _buildList()),
+      body: Container(child: _buildListView()),
     );
-  }
-
-  Widget _buildList() {
-    if (isList == true) {
-      return _buildListView();
-    } else if (isList == false) {
-      return _buildGridView();
-    }
-    return null;
   }
 
   Widget _buildListView() {
@@ -60,14 +50,16 @@ class _NotesScreenState extends State<NotesScreen> {
           return Column(children: <Widget>[
             Slidable(
               key: ValueKey(index),
-              child: noteList(index),
+              child: NoteListRowWidget(notesList[index]),
+              closeOnScroll: true,
               actionPane: SlidableDrawerActionPane(),
               secondaryActions: <Widget>[
                 IconSlideAction(
                   caption: 'Delete',
                   color: Theme.of(context).accentColor,
                   icon: Icons.delete,
-                  onTap: () => deleteModel(index),
+                  onTap: () =>
+                      NotesModel.deleteModel(notesList[index], deleteChanges),
                 ),
               ],
             )
@@ -75,60 +67,10 @@ class _NotesScreenState extends State<NotesScreen> {
         });
   }
 
-  Widget noteList(int index) {
-    return ListTile(
-      title: Text(
-        '${notesList[index].content.length >= 30 ? notesList[index].content.replaceRange(30, notesList[index].content.length, '....') : notesList[index].content}',
-        maxLines: 1,
-        style: TextStyle(fontSize: 20.0),
-      ),
-      subtitle: Text(
-        '${notesList[index].date}',
-        style: TextStyle(fontSize: 12.0),
-      ),
-      onTap: () {
-        Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => NewNote(NotesModel(
-                      id: notesList[index].id,
-                      content: notesList[index].content,
-                      isFav: notesList[index].isFav,
-                      date: notesList[index].date,
-                    ))));
-      },
-    );
-  }
-
-  Widget _buildGridView() {
-    return GridView.count(
-      padding: EdgeInsets.all(5),
-      crossAxisCount: 3,
-      crossAxisSpacing: 20,
-      mainAxisSpacing: 20,
-      children: List.generate(notesList.length, (index) {
-        return Container(
-          child: ListTile(
-            title: Text(
-              '${notesList[index].content}',
-              style: TextStyle(fontSize: 16.0),
-            ),
-            subtitle: Text(
-              '${notesList[index].date}',
-              style: TextStyle(fontSize: 12.0),
-            ),
-          ),
-        );
-      }),
-    );
-  }
-
-  deleteModel(int index) {
-    db.deleteNoteInDB(NotesModel(id: notesList[index].id)).then((_) {
-      setState(() {
-        showDeletedSnakeBar();
-        setNotesFromDb();
-      });
+  deleteChanges() {
+    setState(() {
+      showDeletedSnakeBar();
+      setNotesFromDb();
     });
   }
 
