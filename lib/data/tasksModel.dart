@@ -1,5 +1,4 @@
 import 'package:daily_manager/data/tasksDataBase.dart';
-import 'package:daily_manager/ui/screens/tasksScreen.dart';
 
 class TasksModel {
   int id;
